@@ -123,7 +123,8 @@ h2{font-size:clamp(34px,5.5vw,56px);font-weight:800;margin:14px 0 12px}
 .robot-card:focus-visible{outline:3px solid var(--primary);outline-offset:4px}
 .robot-card-title{display:block;font-size:34px;font-weight:800;margin:12px 0}
 .robot-summary{display:block;max-width:70ch}
-.robot-hint{display:inline-flex;align-items:center;gap:8px;margin-top:20px;font-weight:700}
+.robot-hint{display:flex;align-items:center;justify-content:center;width:100%;margin-top:24px;padding:15px 22px;border-radius:99px;background:#fff;color:#003F2C;font-weight:750;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,.12);transition:transform .35s var(--spring),box-shadow .35s ease,background .25s ease}
+.robot-card:hover .robot-hint,.robot-card:focus-visible .robot-hint{transform:translateY(-3px);background:#F6FBF4;box-shadow:0 8px 20px rgba(0,0,0,.2)}
 .robot-dialog{width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;margin:auto;padding:clamp(24px,4vw,40px);border:1px solid var(--outline-variant);border-radius:36px;background:var(--surface);color:var(--on-surface);box-shadow:0 24px 80px rgba(0,0,0,.32)}
 .robot-dialog::backdrop{background:rgba(0,0,0,.68);backdrop-filter:blur(5px)}
 .robot-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
@@ -324,18 +325,17 @@ html.theme-anim,html.theme-anim *{transition:background-color .5s ease,color .5s
 <section id="robot"><div class="wrap">
   <div class="feature">
     <button class="panel dark robot-card rv" id="robot-open" type="button" aria-haspopup="dialog" aria-controls="robot-dialog">
-      <span class="eyebrow">This season</span>
       <span class="robot-card-title">Our robot</span>
       <span class="robot-summary">Java-controlled motors, a controller-operated ball launcher, and a camera that detects ball colors.</span>
       <span class="chips"><span class="chip-s">Java motor control</span><span class="chip-s">Ball launcher</span><span class="chip-s">Color-detecting camera</span></span>
-      <span class="robot-hint">Explore the robot <span class="ms" aria-hidden="true">arrow_forward</span></span>
+      <span class="robot-hint">Explore the robot</span>
     </button>
   </div>
 </div></section>
 
 <dialog class="robot-dialog" id="robot-dialog" aria-labelledby="robot-dialog-title">
   <div class="robot-dialog-head">
-    <div><span class="eyebrow">This season</span><h3 id="robot-dialog-title">How our robot works</h3></div>
+    <div><h3 id="robot-dialog-title">How our robot works</h3></div>
     <button class="icon-btn" id="robot-close" type="button" aria-label="Close robot details"><span class="ms">close</span></button>
   </div>
   <div class="robot-dialog-grid">
