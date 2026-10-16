@@ -114,11 +114,23 @@ h2{font-size:clamp(34px,5.5vw,56px);font-weight:800;margin:14px 0 12px}
 .card p{color:var(--on-surface-var)}
 
 /* Robot feature */
-.feature{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:stretch}
-.robot-photo{min-height:320px;border-radius:44px;background:var(--sc);border:1px dashed var(--outline-variant)}
+.feature{display:grid;grid-template-columns:1fr;gap:12px}
 .panel{border-radius:44px;padding:clamp(28px,4vw,48px);background:var(--sc-low);border:1px solid var(--outline-variant)}
 .panel.dark{background:var(--primary-container);color:var(--on-primary-container);border:0;border-radius:44px 44px 44px 120px}
 .panel h3{font-size:34px;font-weight:800;margin:12px 0}
+.robot-card{display:block;width:100%;font:inherit;text-align:left;cursor:pointer;transition:transform .3s var(--spring),box-shadow .3s}
+.robot-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.12)}
+.robot-card:focus-visible{outline:3px solid var(--primary);outline-offset:4px}
+.robot-card-title{display:block;font-size:34px;font-weight:800;margin:12px 0}
+.robot-summary{display:block;max-width:70ch}
+.robot-hint{display:inline-flex;align-items:center;gap:8px;margin-top:20px;font-weight:700}
+.robot-dialog{width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;margin:auto;padding:clamp(24px,4vw,40px);border:1px solid var(--outline-variant);border-radius:36px;background:var(--surface);color:var(--on-surface);box-shadow:0 24px 80px rgba(0,0,0,.32)}
+.robot-dialog::backdrop{background:rgba(0,0,0,.68);backdrop-filter:blur(5px)}
+.robot-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+.robot-dialog h3{font-size:clamp(30px,5vw,42px);font-weight:800;line-height:1.05}
+.robot-dialog-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:stretch}
+.robot-dialog p{color:var(--on-surface-var);margin:0 0 14px}
+.robot-dialog-photo{min-height:300px;border:1px dashed var(--outline-variant);border-radius:24px;background:var(--sc)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
 .chip-s{padding:8px 16px;border-radius:12px;background:var(--surface);color:var(--on-surface);font-weight:500;font-size:14px;border:1px solid var(--outline-variant)}
 .panel.dark .chip-s{background:rgba(255,255,255,.1);border-color:transparent;color:inherit}
@@ -203,7 +215,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;
   .blob{width:min(78%,320px);order:-1}
   .stats{grid-template-columns:repeat(3,1fr)}.team{grid-template-columns:repeat(2,1fr)}.mem:last-child{grid-column:1/-1}
   .grid3,.feature{grid-template-columns:1fr}
-  .robot-photo{min-height:240px}
+  .robot-dialog-grid{grid-template-columns:1fr}
+  .robot-dialog-photo{min-height:220px}
   .nav-b{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;justify-content:space-around;padding:8px;border-radius:99px;background:color-mix(in srgb,var(--sc-high) 92%,transparent);backdrop-filter:blur(14px);box-shadow:0 4px 18px rgba(0,0,0,.25)}
   .nav-b a{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:99px;text-decoration:none;color:var(--on-surface-var);font-size:12px;font-weight:500;transition:color .3s,font-variation-settings .45s var(--spring),transform .4s var(--spring)}
   .nav-b a{font-variation-settings:"wdth" 100,"wght" 500}
@@ -310,15 +323,30 @@ html.theme-anim,html.theme-anim *{transition:background-color .5s ease,color .5s
 
 <section id="robot"><div class="wrap">
   <div class="feature">
-    <div class="panel dark rv">
+    <button class="panel dark robot-card rv" id="robot-open" type="button" aria-haspopup="dialog" aria-controls="robot-dialog">
       <span class="eyebrow">This season</span>
-      <h3>Our robot</h3>
-      <p>Java-controlled motors drive our robot, while a controller-operated launcher sends balls toward the hoop at the right speed. A camera running Java identifies each ball by its color.</p>
-      <div class="chips"><span class="chip-s">Java motor control</span><span class="chip-s">Ball launcher</span><span class="chip-s">Color-detecting camera</span></div>
-    </div>
-    <div class="robot-photo" aria-hidden="true"></div>
+      <span class="robot-card-title">Our robot</span>
+      <span class="robot-summary">Java-controlled motors, a controller-operated ball launcher, and a camera that detects ball colors.</span>
+      <span class="chips"><span class="chip-s">Java motor control</span><span class="chip-s">Ball launcher</span><span class="chip-s">Color-detecting camera</span></span>
+      <span class="robot-hint">Explore the robot <span class="ms" aria-hidden="true">arrow_forward</span></span>
+    </button>
   </div>
 </div></section>
+
+<dialog class="robot-dialog" id="robot-dialog" aria-labelledby="robot-dialog-title">
+  <div class="robot-dialog-head">
+    <div><span class="eyebrow">This season</span><h3 id="robot-dialog-title">How our robot works</h3></div>
+    <button class="icon-btn" id="robot-close" type="button" aria-label="Close robot details"><span class="ms">close</span></button>
+  </div>
+  <div class="robot-dialog-grid">
+    <div>
+      <p>Java code controls the motors that move our robot. The team can program how the motors run during a match.</p>
+      <p>A dedicated launcher propels balls toward the hoop at a suitable speed. The driver operates the launcher with a controller.</p>
+      <p>A camera uses Java code to detect ball colors, helping the team tell the different balls apart.</p>
+    </div>
+    <div class="robot-dialog-photo" aria-hidden="true"></div>
+  </div>
+</dialog>
 
 <section id="team"><div class="wrap">
   <span class="eyebrow rv">The crew</span>
@@ -382,6 +410,10 @@ html.theme-anim,html.theme-anim *{transition:background-color .5s ease,color .5s
   /* tapping a tab jumps the highlight straight to it; scroll-spy stays out of the way until the user scrolls by hand */
   ['wheel','touchstart','keydown','pointerdown'].forEach(function(ev){addEventListener(ev,function(){forced=null},{passive:true})});
   document.querySelectorAll('[data-s]').forEach(function(a){a.addEventListener('click',function(){forced=a.dataset.s;setActive(forced)})});
+  var robotDialog=document.getElementById('robot-dialog');
+  document.getElementById('robot-open').addEventListener('click',function(){robotDialog.showModal()});
+  document.getElementById('robot-close').addEventListener('click',function(){robotDialog.close()});
+  robotDialog.addEventListener('click',function(e){if(e.target===robotDialog)robotDialog.close()});
   spy();
   var nb=document.querySelector('.nav-b'),ind=nb.querySelector('.nav-ind'),cur=null,tm;
   var st={l:0,r:0},raf=0;
