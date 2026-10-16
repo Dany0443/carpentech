@@ -1307,6 +1307,14 @@ html.theme-anim * {
     margin: 14px 0;
   }
 
+  .hero-card .eyebrow {
+    max-width: 100%;
+    padding: 6px 12px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
   .hero p {
     font-size: 16px;
     margin-bottom: 20px;
