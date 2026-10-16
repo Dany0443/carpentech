@@ -252,40 +252,47 @@
   const closeRobotButton = document.getElementById('robot-close');
 
   if (robotDialog && openRobotButton && closeRobotButton) {
+    let openingRobotDialog = false;
+
     openRobotButton.addEventListener('click', () => {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        robotDialog.showModal();
+      if (openingRobotDialog || robotDialog.open) {
         return;
       }
 
-      const springEasing = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-      openRobotButton.animate(
-        [{ transform: 'scale(1)' }, { transform: 'scale(0.985)' }, { transform: 'scale(1)' }],
-        { duration: 240, easing: springEasing }
-      );
+      openingRobotDialog = true;
+      const robotCard = openRobotButton.closest('.robot-card');
+      robotCard?.classList.add('is-opening');
 
-      const hintElement = openRobotButton.querySelector('.robot-hint');
-      if (hintElement) {
-        hintElement.animate(
-          [{ transform: 'scale(1)' }, { transform: 'scale(0.94)' }, { transform: 'scale(1)' }],
-          { duration: 240, easing: springEasing }
-        );
-      }
-
-      setTimeout(() => {
+      const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 140;
+      window.setTimeout(() => {
         robotDialog.showModal();
-      }, 110);
+        robotCard?.classList.remove('is-opening');
+        openingRobotDialog = false;
+      }, delay);
     });
 
     closeRobotButton.addEventListener('click', () => {
       robotDialog.close();
     });
 
-    // Close dialog when clicking outside the dialog content on the backdrop
+    robotDialog.addEventListener('close', () => {
+      openRobotButton.closest('.robot-card')?.classList.remove('is-opening');
+      openingRobotDialog = false;
+    });
+
     robotDialog.addEventListener('click', event => {
-      if (event.target === robotDialog) {
+      const bounds = robotDialog.getBoundingClientRect();
+      const clickIsOutside = event.clientX < bounds.left || event.clientX > bounds.right
+        || event.clientY < bounds.top || event.clientY > bounds.bottom;
+
+      if (event.target === robotDialog && clickIsOutside) {
         robotDialog.close();
       }
+    });
+
+    // Keep Escape from dismissing the dialog.
+    robotDialog.addEventListener('cancel', event => {
+      event.preventDefault();
     });
   }
 })();
