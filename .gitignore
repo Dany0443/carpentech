@@ -1,2 +1,8 @@
-.DS_Store
 AGENT.md
+/.agents/
+/docs/
+/.taste-skill/
+/.taste/
+/.impeccable/
+/DESIGN.md
+/dist/

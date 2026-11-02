@@ -1,299 +1,191 @@
-(function () {
-  // Reveal animations and animated counters on scroll
-  const revealObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) {
-        return;
-      }
+(() => {
+  'use strict';
+  const root = document.documentElement;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const systemDark = matchMedia('(prefers-color-scheme: dark)');
+  const $ = (selector, scope = document) => scope.querySelector(selector);
+  const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+  const motionAllowed = () => !reduceMotion.matches && root.dataset.motion !== 'off';
+  const store = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Storage is optional. */ } };
+  const spring = CSS.supports('animation-timing-function', 'linear(0, .8, 1)') ? getComputedStyle(root).getPropertyValue('--motion-spring').trim() : 'cubic-bezier(.2,0,0,1)';
+  const activeAnimations = new WeakMap();
+  function animate(element, frames, options = {}) {
+    if (!element || !motionAllowed() || !element.animate) return null;
+    activeAnimations.get(element)?.cancel();
+    const animation = element.animate(frames, { duration: 450, easing: spring, ...options });
+    activeAnimations.set(element, animation);
+    animation.addEventListener('finish', () => { if (activeAnimations.get(element) === animation) activeAnimations.delete(element); }, { once: true });
+    return animation;
+  }
+  root.classList.add('js');
+  $$('[data-motion-toggle], #theme-toggle, #menu-open, #photo-open, #copy-email, .robot-segments, .team-filters, .contact-intents').forEach(element => { element.hidden = false; });
 
-      const target = entry.target;
-      target.classList.add('in');
-
-      // Animate numerical counters
-      const numberElements = target.querySelectorAll('[data-n]');
-      numberElements.forEach(el => {
-        const targetNumber = Number(el.dataset.n);
-        const startTime = performance.now();
-        const duration = 1100;
-
-        function animateNumber(now) {
-          const progress = Math.min((now - startTime) / duration, 1);
-          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-          el.textContent = Math.round(targetNumber * easeOutCubic);
-
-          if (progress < 1) {
-            requestAnimationFrame(animateNumber);
-          }
-        }
-
-        animateNumber(startTime);
-      });
-
-      // Animate progress bar widths
-      const progressElements = target.querySelectorAll('[data-w]');
-      progressElements.forEach(el => {
-        el.style.width = el.dataset.w + '%';
-      });
-
-      observer.unobserve(target);
+  let snackbarTimer;
+  function notify(message) {
+    const snackbar = $('#snackbar');
+    clearTimeout(snackbarTimer);
+    snackbar.textContent = message;
+    snackbar.classList.add('is-visible');
+    snackbarTimer = setTimeout(() => snackbar.classList.remove('is-visible'), 3500);
+  }
+  function syncMotionControls() {
+    const paused = !motionAllowed();
+    $$('[data-motion-toggle]').forEach(button => {
+      button.setAttribute('aria-pressed', String(paused));
+      button.setAttribute('aria-label', reduceMotion.matches ? 'Reduced motion follows your system preference' : paused ? 'Enable animations' : 'Pause animations');
+      $('use', button).setAttribute('href', paused ? '#i-play' : '#i-pause');
+      const label = $('span', button);
+      if (label) label.textContent = reduceMotion.matches ? 'Reduced motion' : paused ? 'Motion paused' : 'Motion on';
     });
-  }, { threshold: 0.15 });
+    if (paused) { document.getAnimations().forEach(animation => animation.cancel()); $$('.animate-in').forEach(element => element.classList.remove('animate-in')); }
+  }
+  $$('[data-motion-toggle]').forEach(button => button.addEventListener('click', () => {
+    if (reduceMotion.matches) { notify('Reduced motion is enabled in your system settings.'); return; }
+    const paused = root.dataset.motion !== 'off';
+    root.dataset.motion = paused ? 'off' : 'on';
+    store('carpentech-motion', paused ? 'off' : 'on');
+    syncMotionControls(); notify(paused ? 'Animations paused.' : 'Animations enabled.');
+  }));
+  reduceMotion.addEventListener('change', syncMotionControls);
+  syncMotionControls();
 
-  document.querySelectorAll('.rv, .progress').forEach(el => {
-    revealObserver.observe(el);
+  const themeButton = $('#theme-toggle');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : systemDark.matches;
+  function syncThemeControl() {
+    const dark = isDark();
+    themeButton.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    themeButton.setAttribute('aria-pressed', String(dark));
+    $('use', themeButton).setAttribute('href', dark ? '#i-sun' : '#i-moon');
+    $('meta[name="theme-color"]').setAttribute('content', dark ? '#111b15' : '#f5f7f1');
+  }
+  themeButton.addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    const update = () => { root.dataset.theme = next; store('carpentech-theme', next); syncThemeControl(); };
+    if (document.startViewTransition && motionAllowed()) document.startViewTransition(update); else update();
+    animate($('svg', themeButton), [{ transform: 'rotate(-70deg) scale(.55)' }, { transform: 'none' }], { duration: 500 });
   });
+  systemDark.addEventListener('change', syncThemeControl);
+  syncThemeControl();
 
-  // Navigation scroll spy
-  const sectionIds = ['home', 'about', 'robot', 'team', 'join'];
-  let forcedSectionId = null;
-  let scrollTick = 0;
+  // All content is visible by default; an observer only adds finite entrance motion.
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.filter(entry => entry.isIntersecting).forEach((entry, index) => {
+        observer.unobserve(entry.target);
+        if (!motionAllowed()) return;
+        entry.target.style.setProperty('--reveal-delay', `${Math.min(index * 55, 165)}ms`);
+        entry.target.classList.add('animate-in');
+        entry.target.addEventListener('animationend', () => entry.target.classList.remove('animate-in'), { once: true });
+      });
+    }, { threshold: .08, rootMargin: '0px 0px -20px 0px' });
+    $$('[data-reveal]').forEach(element => observer.observe(element));
+  }
 
-  function setActiveNavLink(id) {
-    document.querySelectorAll('[data-s]').forEach(link => {
-      link.classList.toggle('on', link.dataset.s === id);
+  const systemButtons = $$('[data-system]');
+  const robotDetails = $$('[data-robot-detail]');
+  const explorerImage = $('#explorer-image');
+  const indicator = $('.segment-indicator');
+  let selectedSystem = 0;
+  const photoViews = { overview: 'translate(0%, 0%) scale(1)', drive: 'translate(2%, -18%) scale(1.65)', control: 'translate(-8%, 20%) scale(1.65)' };
+  robotDetails.forEach((detail, index) => { detail.hidden = index !== 0; });
+  function selectSystem(button) {
+    const index = systemButtons.indexOf(button);
+    if (index === selectedSystem) return;
+    const fromTransform = getComputedStyle(explorerImage).transform;
+    const oldIndicator = getComputedStyle(indicator).transform;
+    const nextTransform = photoViews[button.dataset.system];
+    selectedSystem = index;
+    systemButtons.forEach(element => element.setAttribute('aria-pressed', String(element === button)));
+    robotDetails.forEach(detail => { detail.hidden = detail.dataset.robotDetail !== button.dataset.system; });
+    indicator.style.transform = `translateX(${index * 100}%)`;
+    explorerImage.style.transform = nextTransform;
+    animate(indicator, [{ transform: oldIndicator }, { transform: `translateX(${index * 100}%)` }], { duration: 520 });
+    animate(explorerImage, [{ transform: fromTransform }, { transform: nextTransform }], { duration: 700 });
+    animate($('#robot-insight'), [{ opacity: .25, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 350, easing: 'cubic-bezier(.05,.7,.1,1)' });
+    explorerImage.alt = button.dataset.system === 'drive' ? 'Zoomed view of the robot drivetrain, wheels, and mechanical connections' : button.dataset.system === 'control' ? 'Zoomed view of the robot’s REV control hubs and wiring' : 'A closer view of robot 28287, showing its frame and components';
+  }
+  systemButtons.forEach(button => button.addEventListener('click', () => selectSystem(button)));
+  function arrowGroup(buttons) {
+    buttons.forEach((button, index) => button.addEventListener('keydown', event => {
+      let next;
+      if (event.key === 'ArrowRight') next = (index + 1) % buttons.length;
+      if (event.key === 'ArrowLeft') next = (index - 1 + buttons.length) % buttons.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = buttons.length - 1;
+      if (next === undefined) return;
+      event.preventDefault(); buttons[next].focus(); buttons[next].click();
+    }));
+  }
+  arrowGroup(systemButtons);
+
+  const teamButtons = $$('[data-team-filter]');
+  const members = $$('.roster li');
+  teamButtons.forEach(button => button.addEventListener('click', () => {
+    if (button.getAttribute('aria-pressed') === 'true') return;
+    const before = new Map(members.filter(member => !member.hidden).map(member => [member, member.getBoundingClientRect()]));
+    teamButtons.forEach(element => element.setAttribute('aria-pressed', String(element === button)));
+    members.forEach(member => { member.hidden = button.dataset.teamFilter !== 'all' && member.dataset.teamArea !== button.dataset.teamFilter; });
+    const visible = members.filter(member => !member.hidden);
+    visible.forEach((member, index) => {
+      const previous = before.get(member), current = member.getBoundingClientRect();
+      animate(member, [{ opacity: previous ? 1 : .25, transform: previous ? `translate(${previous.left - current.left}px, ${previous.top - current.top}px)` : 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 400, delay: index * 25 });
     });
+    const area = button.dataset.teamFilter === 'all' ? 'team members' : button.dataset.teamFilter === 'people' ? 'in management & PR' : `in ${button.textContent.toLowerCase()}`;
+    $('#team-status').textContent = `${visible.length} ${area}`;
+  }));
+  arrowGroup(teamButtons);
+
+  const intents = {
+    partner: { description: 'Have an idea for supporting the team? Let’s talk about a partnership that works for both of us.', action: 'Start a conversation', subject: 'Partnership with CarpenTech', body: 'Hello CarpenTech,\n\nI would like to discuss supporting your team.\n\nMy name / organization:\nHow we could help:\n' },
+    mentor: { description: 'Have experience in engineering, programming, or communication? Share what you know with students who are ready to learn.', action: 'Talk about mentoring', subject: 'Mentoring CarpenTech', body: 'Hello CarpenTech,\n\nI am interested in mentoring the team.\n\nMy experience:\nHow I could help:\n' },
+    join: { description: 'Curious about robotics? You don’t need to have all the answers. Get in touch and tell us what you would like to learn.', action: 'Ask about joining', subject: 'Joining CarpenTech', body: 'Hello CarpenTech,\n\nI would like to learn more about joining the team.\n\nMy name:\nWhat interests me:\n' }
+  };
+  const intentButtons = $$('[data-intent]');
+  intentButtons.forEach(button => button.addEventListener('click', () => {
+    if (button.getAttribute('aria-pressed') === 'true') return;
+    intentButtons.forEach(element => element.setAttribute('aria-pressed', String(element === button)));
+    const intent = intents[button.dataset.intent], link = $('#intent-email');
+    $('#intent-description').textContent = intent.description;
+    link.firstChild.textContent = intent.action;
+    link.href = `mailto:carpentech@carpineni.ro?subject=${encodeURIComponent(intent.subject)}&body=${encodeURIComponent(intent.body)}`;
+    animate($('#intent-description'), [{ opacity: .3, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 300 });
+  }));
+  arrowGroup(intentButtons);
+  $$('details').forEach(details => details.addEventListener('toggle', () => { if (details.open) animate($('.details-body', details), [{ opacity: .2, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 300 }); }));
+
+  const menu = $('#mobile-menu'), photo = $('#photo-dialog'), menuOpen = $('#menu-open');
+  function openDialog(dialog) {
+    if (dialog.open) return;
+    dialog.showModal(); document.body.classList.add('has-dialog');
+    if (dialog === menu) menuOpen.setAttribute('aria-expanded', 'true');
+    animate(dialog, [{ opacity: .3, transform: dialog === menu ? 'translateY(-28px) scale(.97)' : 'translateY(24px) scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 450 });
+    if (dialog === menu) $$('nav a', menu).forEach((link, index) => animate(link, [{ opacity: .2, transform: 'translateY(-12px)' }, { opacity: 1, transform: 'none' }], { duration: 350, delay: index * 45 }));
   }
-
-  function updateScrollSpy() {
-    if (forcedSectionId) {
-      return;
-    }
-
-    const docElement = document.documentElement;
-    let currentId = 'home';
-
-    // Highlight the last section if scrolled to the bottom
-    if (window.innerHeight + window.scrollY >= docElement.scrollHeight - 6) {
-      currentId = 'join';
-    } else {
-      sectionIds.forEach(id => {
-        const section = document.getElementById(id);
-        if (section && section.getBoundingClientRect().top <= window.innerHeight * 0.45) {
-          currentId = id;
-        }
-      });
-    }
-
-    setActiveNavLink(currentId);
-  }
-
-  window.addEventListener('scroll', () => {
-    if (!scrollTick) {
-      scrollTick = requestAnimationFrame(() => {
-        scrollTick = 0;
-        updateScrollSpy();
-      });
-    }
-  }, { passive: true });
-
-  // Reset forced section lock when user manually scrolls or touches
-  ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(eventType => {
-    window.addEventListener(eventType, () => {
-      forcedSectionId = null;
-    }, { passive: true });
+  menuOpen.addEventListener('click', () => openDialog(menu)); $('#photo-open').addEventListener('click', () => openDialog(photo));
+  [menu, photo].forEach(dialog => {
+    dialog.addEventListener('close', () => { if (!menu.open && !photo.open) document.body.classList.remove('has-dialog'); if (dialog === menu) menuOpen.setAttribute('aria-expanded', 'false'); });
+    dialog.addEventListener('click', event => { const r = dialog.getBoundingClientRect(); if (event.target === dialog && (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom)) dialog.close(); });
   });
+  $$('nav a', menu).forEach(link => link.addEventListener('click', () => menu.close()));
+  matchMedia('(min-width: 801px)').addEventListener('change', event => { if (event.matches && menu.open) menu.close(); });
 
-  // Jump to section and lock highlight when a nav link is clicked
-  document.querySelectorAll('[data-s]').forEach(link => {
-    link.addEventListener('click', () => {
-      forcedSectionId = link.dataset.s;
-      setActiveNavLink(forcedSectionId);
-    });
+  const navLinks = $$('[data-nav]'), sections = ['robot', 'about', 'team', 'support'].map(id => document.getElementById(id));
+  let navTick = false;
+  function syncNavigation() {
+    let current = null;
+    sections.forEach(section => { if (section.getBoundingClientRect().top <= innerHeight * .42) current = section.id; });
+    if (scrollY + innerHeight >= document.documentElement.scrollHeight - 8) current = 'support';
+    navLinks.forEach(link => { if (link.dataset.nav === current) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current'); }); navTick = false;
+  }
+  addEventListener('scroll', () => { if (!navTick) { navTick = true; requestAnimationFrame(syncNavigation); } }, { passive: true }); syncNavigation();
+  $('#copy-email').addEventListener('click', async () => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText('carpentech@carpineni.ro');
+      const use = $('#copy-email use'); use.setAttribute('href', '#i-check'); notify('Email copied. Let’s make something happen.'); setTimeout(() => use.setAttribute('href', '#i-copy'), 2200);
+    } catch {
+      const range = document.createRange(); range.selectNodeContents($('.email-block>a'));
+      const selection = getSelection(); selection.removeAllRanges(); selection.addRange(range); notify('Email selected. Copy it with your device’s copy command.');
+    }
   });
-
-  updateScrollSpy();
-
-  // Mobile bottom navigation indicator animation
-  const bottomNav = document.querySelector('.nav-b');
-  if (bottomNav) {
-    const indicator = bottomNav.querySelector('.nav-ind');
-    let currentActiveLink = null;
-    let indicatorState = { left: 0, right: 0 };
-    let indicatorRafId = 0;
-
-    function renderIndicator(left, right, verticalOffset) {
-      indicator.style.left = left + 'px';
-      indicator.style.width = (right - left) + 'px';
-      const inset = (8 + verticalOffset) + 'px';
-      indicator.style.top = inset;
-      indicator.style.bottom = inset;
-    }
-
-    function positionIndicator(linkElement, animate) {
-      if (!linkElement) {
-        return;
-      }
-
-      const navLinks = Array.from(bottomNav.querySelectorAll('a'));
-      const navStyles = getComputedStyle(bottomNav);
-      const paddingLeft = parseFloat(navStyles.paddingLeft) || 8;
-      const columnGap = parseFloat(navStyles.columnGap) || 2;
-
-      const linkStyles = getComputedStyle(linkElement);
-      const linkPaddingLeft = parseFloat(linkStyles.paddingLeft) || 12;
-      const iconWidth = linkElement.querySelector('.ms').offsetWidth + 2 * linkPaddingLeft;
-      const labelElement = linkElement.querySelector('.lb');
-      const labelWidth = labelElement ? Math.min(labelElement.scrollWidth, 90) : 0;
-
-      const targetLeft = paddingLeft + navLinks.indexOf(linkElement) * (iconWidth + columnGap);
-      const targetRight = targetLeft + iconWidth + 8 + labelWidth;
-
-      cancelAnimationFrame(indicatorRafId);
-
-      if (!currentActiveLink || !animate) {
-        indicator.style.transition = 'none';
-        renderIndicator(targetLeft, targetRight, 0);
-        indicatorState = { left: targetLeft, right: targetRight };
-        currentActiveLink = linkElement;
-        return;
-      }
-
-      if (linkElement === currentActiveLink) {
-        return;
-      }
-
-      // Fluid pill animation: leading edge expands first, trailing edge catches up
-      const startState = indicatorState;
-      const startTime = performance.now();
-      const duration = 400;
-      const movingRight = targetRight > startState.right;
-
-      function easeOutCubic(t) {
-        return 1 - Math.pow(1 - t, 3);
-      }
-
-      function easeInOutCubic(t) {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      }
-
-      function stepAnimation(now) {
-        const elapsed = Math.min((now - startTime) / duration, 1);
-        const leadingProgress = easeOutCubic(Math.min(1, elapsed / 0.55));
-        const trailingProgress = easeInOutCubic(Math.max(0, (elapsed - 0.3) / 0.7));
-
-        let currentLeft;
-        let currentRight;
-
-        if (movingRight) {
-          currentRight = startState.right + (targetRight - startState.right) * leadingProgress;
-          currentLeft = startState.left + (targetLeft - startState.left) * trailingProgress;
-        } else {
-          currentLeft = startState.left + (targetLeft - startState.left) * leadingProgress;
-          currentRight = startState.right + (targetRight - startState.right) * trailingProgress;
-        }
-
-        indicatorState = { left: currentLeft, right: currentRight };
-        const bounceOffset = 5 * Math.sin(Math.PI * elapsed);
-        renderIndicator(currentLeft, currentRight, bounceOffset);
-
-        if (elapsed < 1) {
-          indicatorRafId = requestAnimationFrame(stepAnimation);
-        } else {
-          indicatorState = { left: targetLeft, right: targetRight };
-          renderIndicator(targetLeft, targetRight, 0);
-        }
-      }
-
-      indicatorRafId = requestAnimationFrame(stepAnimation);
-      currentActiveLink = linkElement;
-    }
-
-    // Observe active class changes on navigation links
-    const navObserver = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.target.classList.contains('on')) {
-          positionIndicator(mutation.target, true);
-        }
-      });
-    });
-
-    navObserver.observe(bottomNav, {
-      attributes: true,
-      attributeFilter: ['class'],
-      subtree: true
-    });
-
-    function resyncIndicator() {
-      const activeLink = bottomNav.querySelector('a.on');
-      if (activeLink) {
-        currentActiveLink = null;
-        positionIndicator(activeLink, false);
-      }
-    }
-
-    window.addEventListener('resize', resyncIndicator);
-    window.addEventListener('load', resyncIndicator);
-  }
-
-  // Dark and light theme toggle
-  const themeToggle = document.getElementById('theme');
-  if (themeToggle) {
-    let themeTimeout = null;
-
-    themeToggle.addEventListener('click', () => {
-      const root = document.documentElement;
-      const isDark = root.dataset.theme
-        ? root.dataset.theme === 'dark'
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-      root.classList.add('theme-anim');
-      root.dataset.theme = isDark ? 'light' : 'dark';
-
-      clearTimeout(themeTimeout);
-      themeTimeout = setTimeout(() => {
-        root.classList.remove('theme-anim');
-      }, 600);
-    });
-  }
-
-  // Robot details modal dialog
-  const robotDialog = document.getElementById('robot-dialog');
-  const openRobotButton = document.getElementById('robot-open');
-  const closeRobotButton = document.getElementById('robot-close');
-
-  if (robotDialog && openRobotButton && closeRobotButton) {
-    let openingRobotDialog = false;
-
-    openRobotButton.addEventListener('click', () => {
-      if (openingRobotDialog || robotDialog.open) {
-        return;
-      }
-
-      openingRobotDialog = true;
-      const robotCard = openRobotButton.closest('.robot-card');
-      robotCard?.classList.add('is-opening');
-
-      const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 140;
-      window.setTimeout(() => {
-        robotDialog.showModal();
-        robotCard?.classList.remove('is-opening');
-        openingRobotDialog = false;
-      }, delay);
-    });
-
-    closeRobotButton.addEventListener('click', () => {
-      robotDialog.close();
-    });
-
-    robotDialog.addEventListener('close', () => {
-      openRobotButton.closest('.robot-card')?.classList.remove('is-opening');
-      openingRobotDialog = false;
-    });
-
-    robotDialog.addEventListener('click', event => {
-      const bounds = robotDialog.getBoundingClientRect();
-      const clickIsOutside = event.clientX < bounds.left || event.clientX > bounds.right
-        || event.clientY < bounds.top || event.clientY > bounds.bottom;
-
-      if (event.target === robotDialog && clickIsOutside) {
-        robotDialog.close();
-      }
-    });
-
-    // Keep Escape from dismissing the dialog.
-    robotDialog.addEventListener('cancel', event => {
-      event.preventDefault();
-    });
-  }
 })();
-
