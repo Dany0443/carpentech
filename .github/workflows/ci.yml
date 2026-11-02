@@ -1,0 +1,27 @@
+name: Static site checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-and-structure:
+    name: Syntax and structure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Install test dependencies
+        run: >-
+          npm install --no-save --package-lock=false --ignore-scripts
+          css-tree@3.2.1 html-validate@11.18.0 parse5@8.1.0
+          fast-xml-parser@5.11.2 postcss@8.5.32
+      - name: Check syntax, structure, and content
+        run: node --test test/*.test.mjs
