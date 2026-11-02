@@ -6,7 +6,3 @@
 - Run `node --test test/*.test.mjs` after changes; install the standalone check tools as documented in contribution.md. Verify interaction and layout changes in a browser.
 - Keep the repository free of npm manifests, lockfiles, and Playwright configuration.
 - Write commit messages as `type(scope): describe the change shortly`.
-
-# graphify
-
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
