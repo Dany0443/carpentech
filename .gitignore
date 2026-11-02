@@ -6,3 +6,6 @@ AGENT.md
 /.impeccable/
 /DESIGN.md
 /dist/
+/node_modules/
+/test-results/
+/playwright-report/
