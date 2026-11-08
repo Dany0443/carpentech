@@ -7,6 +7,7 @@
 
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+  const localize = (value) => window.i18n?.t(value) ?? value;
   const motionAllowed = () => !reduceMotion.matches;
 
   const store = (key, value) => {
@@ -65,10 +66,65 @@
 
   root.classList.add('js');
   $$(
-    '#theme-toggle, #menu-open, #photo-open, #copy-email, .robot-segments, .team-filters, .contact-intents',
+    '#theme-toggle, #menu-open, #photo-open, #copy-email, .robot-segments, .contact-intents',
   ).forEach((element) => {
     element.hidden = false;
   });
+
+  $$('.button').forEach((button) => {
+    const release = () => button.classList.remove('is-pressed');
+
+    button.addEventListener('pointerdown', () => button.classList.add('is-pressed'));
+    button.addEventListener('pointerup', release);
+    button.addEventListener('pointercancel', release);
+    button.addEventListener('pointerleave', release);
+    button.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        button.classList.add('is-pressed');
+      }
+    });
+    button.addEventListener('keyup', release);
+    button.addEventListener('blur', release);
+  });
+
+  // Ripple + haptic tick on press.
+  const rippleTargets =
+    '.button, .social-button, .icon-button, .round-link, .segmented-control button, .contact-intents button, .copy-button, .mobile-menu nav a';
+
+  document.addEventListener(
+    'pointerdown',
+    (event) => {
+      const el = event.target.closest(rippleTargets);
+
+      if (!el || event.button > 0 || !motionAllowed()) {
+        return;
+      }
+
+      const r = el.getBoundingClientRect();
+      const size =
+        Math.hypot(
+          Math.max(event.clientX - r.left, r.right - event.clientX),
+          Math.max(event.clientY - r.top, r.bottom - event.clientY),
+        ) * 2;
+      const ripple = document.createElement('span');
+
+      ripple.className = 'ripple';
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${event.clientX - r.left - size / 2}px;top:${event.clientY - r.top - size / 2}px`;
+      el.append(ripple);
+      ripple
+        .animate(
+          [
+            { transform: 'scale(0)', opacity: 0.18 },
+            { transform: 'scale(1)', opacity: 0.14, offset: 0.55 },
+            { transform: 'scale(1)', opacity: 0 },
+          ],
+          { duration: 700, easing: motion.effects },
+        )
+        .finished.then(() => ripple.remove(), () => ripple.remove());
+      navigator.vibrate?.(6);
+    },
+    { passive: true },
+  );
 
   let snackbarTimer;
 
@@ -76,7 +132,7 @@
     const snackbar = $('#snackbar');
 
     clearTimeout(snackbarTimer);
-    snackbar.textContent = message;
+    snackbar.textContent = localize(message);
     snackbar.classList.add('is-visible');
     snackbarTimer = setTimeout(() => snackbar.classList.remove('is-visible'), 3500);
   }
@@ -105,9 +161,13 @@
 
   $$('[data-email]').forEach((link) => {
     link.href =
-      link.dataset.email === 'partner' ? emailUrl('Partnership with CarpenTech') : emailUrl();
+      link.dataset.email === 'partner'
+        ? emailUrl(localize('Partnership with CarpenTech'))
+        : emailUrl();
   });
-  $('[data-email-address]').textContent = emailAddress;
+  $$('[data-email-address]').forEach((element) => {
+    element.textContent = emailAddress;
+  });
 
   const themeButton = $('#theme-toggle');
   const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : systemDark.matches);
@@ -115,13 +175,16 @@
   function syncThemeControl() {
     const dark = isDark();
 
-    themeButton.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    themeButton.setAttribute(
+      'aria-label',
+      localize(dark ? 'Switch to light theme' : 'Switch to dark theme'),
+    );
     themeButton.setAttribute('aria-pressed', String(dark));
     $('use', themeButton).setAttribute('href', dark ? '#i-sun' : '#i-moon');
     $('meta[name="theme-color"]').setAttribute('content', dark ? '#111b15' : '#f5f7f1');
   }
 
-  themeButton.addEventListener('click', () => {
+  themeButton.addEventListener('click', (event) => {
     const next = isDark() ? 'light' : 'dark';
     const update = () => {
       root.dataset.theme = next;
@@ -129,8 +192,14 @@
       syncThemeControl();
     };
 
-    if (document.startViewTransition && motionAllowed()) {
-      document.startViewTransition(update);
+    if (!motionAllowed()) {
+      update();
+
+      return;
+    }
+
+    if (window.i18n?.transitionWithWave) {
+      window.i18n.transitionWithWave(update, themeButton, event);
     } else {
       update();
     }
@@ -218,6 +287,20 @@
     control: 'translate(-8%, 20%) scale(1.65)',
   };
 
+  function syncExplorerAlt() {
+    const system = systemButtons[selectedSystem]?.dataset.system;
+    const alt =
+      system === 'drive'
+        ? 'Zoomed view of the robot drivetrain, wheels, and mechanical connections'
+        : system === 'control'
+          ? 'Zoomed view of the robot’s REV control hubs and wiring'
+          : 'A closer view of robot 28287, showing its frame and components';
+
+    if (explorerImage) {
+      explorerImage.alt = localize(alt);
+    }
+  }
+
   robotDetails.forEach((detail, index) => {
     detail.hidden = index !== 0;
   });
@@ -241,12 +324,7 @@
     indicator.style.transform = `translateX(${index * 100}%)`;
     explorerImage.style.transform = nextTransform;
     revealContent($('#robot-insight'));
-    explorerImage.alt =
-      button.dataset.system === 'drive'
-        ? 'Zoomed view of the robot drivetrain, wheels, and mechanical connections'
-        : button.dataset.system === 'control'
-          ? 'Zoomed view of the robot’s REV control hubs and wiring'
-          : 'A closer view of robot 28287, showing its frame and components';
+    syncExplorerAlt();
   }
 
   systemButtons.forEach((button) => button.addEventListener('click', () => selectSystem(button)));
@@ -285,64 +363,6 @@
 
   arrowGroup(systemButtons);
 
-  const teamButtons = $$('[data-team-filter]');
-  const members = $$('.member-card');
-
-  teamButtons.forEach((button) =>
-    button.addEventListener('click', () => {
-      if (button.getAttribute('aria-pressed') === 'true') {
-        return;
-      }
-
-      const before = new Map(
-        members
-          .filter((member) => !member.hidden)
-          .map((member) => [member, member.getBoundingClientRect()]),
-      );
-      const area = button.dataset.teamFilter;
-
-      teamButtons.forEach((element) =>
-        element.setAttribute('aria-pressed', String(element === button)),
-      );
-
-      members.forEach((member) => {
-        activeAnimations.get(member)?.cancel();
-
-        const areas = member.dataset.teamArea.split(' ');
-
-        member.hidden = area !== 'all' && !areas.includes(area);
-      });
-
-      const visible = members.filter((member) => !member.hidden);
-      const after = new Map(visible.map((member) => [member, member.getBoundingClientRect()]));
-
-      visible.forEach((member) => {
-        const previous = before.get(member);
-        const current = after.get(member);
-
-        animate(
-          member,
-          [
-            {
-              opacity: previous ? 1 : 0,
-              transform: previous
-                ? `translate(${previous.left - current.left}px, ${previous.top - current.top}px)`
-                : 'translateY(8px)',
-            },
-            { opacity: 1, transform: 'none' },
-          ],
-          { easing: motion.spatial },
-        );
-      });
-
-      $('#team-status').textContent =
-        area === 'all'
-          ? `${visible.length} team members`
-          : `${visible.length} in ${button.textContent.trim()}`;
-    }),
-  );
-  arrowGroup(teamButtons);
-
   const intents = {
     partner: {
       description:
@@ -368,6 +388,24 @@
   };
   const intentButtons = $$('[data-intent]');
 
+  function renderIntent(key, announce = false) {
+    const intent = intents[key];
+    const description = $('#intent-description');
+    const link = $('#intent-email');
+
+    if (!intent || !description || !link) {
+      return;
+    }
+
+    description.textContent = localize(intent.description);
+    link.firstChild.textContent = localize(intent.action);
+    link.href = emailUrl(localize(intent.subject), localize(intent.body));
+
+    if (announce) {
+      revealContent(description);
+    }
+  }
+
   intentButtons.forEach((button) =>
     button.addEventListener('click', () => {
       if (button.getAttribute('aria-pressed') === 'true') {
@@ -378,15 +416,23 @@
         element.setAttribute('aria-pressed', String(element === button)),
       );
 
-      const intent = intents[button.dataset.intent];
-      const link = $('#intent-email');
-
-      $('#intent-description').textContent = intent.description;
-      link.firstChild.textContent = intent.action;
-      link.href = emailUrl(intent.subject, intent.body);
-      revealContent($('#intent-description'));
+      renderIntent(button.dataset.intent, true);
     }),
   );
+
+  renderIntent(intentButtons.find((button) => button.getAttribute('aria-pressed') === 'true')?.dataset.intent);
+
+  document.addEventListener('i18n:change', () => {
+    $$('[data-email]:not(#intent-email)').forEach((link) => {
+      link.href =
+        link.dataset.email === 'partner'
+          ? emailUrl(localize('Partnership with CarpenTech'))
+          : emailUrl();
+    });
+    renderIntent(intentButtons.find((button) => button.getAttribute('aria-pressed') === 'true')?.dataset.intent);
+    syncExplorerAlt();
+  });
+
   arrowGroup(intentButtons);
   $$('details').forEach((details) => {
     const summary = $('summary', details);
@@ -490,10 +536,10 @@
   }
 
   menuOpen.addEventListener('click', () => openDialog(menu));
-  $('#photo-open').addEventListener('click', () => openDialog(photo));
-  [menu, photo].forEach((dialog) => {
+  $('#photo-open')?.addEventListener('click', () => openDialog(photo));
+  [menu, photo, $('#lightbox')].filter(Boolean).forEach((dialog) => {
     dialog.addEventListener('close', () => {
-      if (!menu.open && !photo.open) {
+      if (!menu.open && !photo?.open && !$('#lightbox')?.open) {
         document.body.classList.remove('has-dialog');
       }
 
@@ -523,8 +569,97 @@
   });
 
   const navLinks = $$('[data-nav]');
-  const sections = ['robot', 'about', 'team', 'support'].map((id) => document.getElementById(id));
+  // Only links to sections on this page are tracked; other pages have none.
+  const sections = navLinks
+    .map((link) => document.getElementById(link.dataset.nav))
+    .filter(Boolean);
+  const header = $('.site-header');
+  const nav = $('.primary-nav');
+  const pill = document.createElement('span');
+  const glide = motion.effects;
+  let pillBox = null;
+  let currentId = null;
+  let navLock = null;
+  let lockTimer;
   let navTick = false;
+  // Pages without in-page sections (like DECODE) park the pill on the current page link.
+  const staticLink = navLinks.length ? null : $('a[aria-current="page"]', nav);
+
+  pill.className = 'nav-pill';
+  pill.setAttribute('aria-hidden', 'true');
+  nav.prepend(pill);
+  nav.classList.add('has-pill');
+
+  // The pill stretches across both links, then snaps onto the new one.
+  function placePill(link, animated = true) {
+    if (!link) {
+      pill.style.opacity = '0';
+      pillBox = null;
+
+      return;
+    }
+
+    let prev = pillBox;
+
+    if (pill.getAnimations().length) {
+      const p = pill.getBoundingClientRect();
+
+      prev = { x: p.left - nav.getBoundingClientRect().left, w: p.width };
+      pill.getAnimations().forEach((animation) => animation.cancel());
+    }
+
+    const next = { x: link.offsetLeft, w: link.offsetWidth };
+
+    pill.style.width = `${next.w}px`;
+    pill.style.transform = `translateX(${next.x}px)`;
+    pill.style.opacity = '1';
+    pillBox = next;
+
+    if (!animated || !motionAllowed()) {
+      return;
+    }
+
+    if (prev) {
+      const lo = Math.min(prev.x, next.x);
+      const hi = Math.max(prev.x + prev.w, next.x + next.w);
+
+      pill.animate(
+        [
+          { transform: `translateX(${prev.x}px)`, width: `${prev.w}px` },
+          { transform: `translateX(${lo}px)`, width: `${hi - lo}px`, offset: 0.38 },
+          { transform: `translateX(${next.x}px)`, width: `${next.w}px` },
+        ],
+        { duration: 460, easing: glide },
+      );
+    } else {
+      pill.animate(
+        [
+          { transform: `translateX(${next.x}px) scale(0.85)`, opacity: 0 },
+          { transform: `translateX(${next.x}px) scale(1)`, opacity: 1 },
+        ],
+        { duration: 320, easing: glide },
+      );
+    }
+  }
+
+  function setCurrent(id, animated = true) {
+    if (id === currentId && (pillBox || !id)) {
+      return;
+    }
+
+    currentId = id;
+    navLinks.forEach((link) => {
+      if (link.dataset.nav === id) {
+        link.setAttribute('aria-current', 'location');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+    placePill(
+      navLinks.find((link) => link.dataset.nav === id),
+      animated,
+    );
+  }
 
   function syncNavigation() {
     let current = null;
@@ -535,20 +670,48 @@
       }
     });
 
-    if (scrollY + innerHeight >= document.documentElement.scrollHeight - 8) {
-      current = 'support';
+    if (sections.length && scrollY + innerHeight >= document.documentElement.scrollHeight - 8) {
+      current = sections.at(-1).id;
     }
 
-    navLinks.forEach((link) => {
-      if (link.dataset.nav === current) {
-        link.setAttribute('aria-current', 'location');
-      } else {
-        link.removeAttribute('aria-current');
-      }
-    });
-
+    // While a nav click is scrolling, hold the pill on its target instead of hopping through sections.
+    setCurrent(navLock ?? current);
+    header.classList.toggle('is-scrolled', scrollY > 16);
     navTick = false;
   }
+
+  function releaseNav() {
+    clearTimeout(lockTimer);
+    navLock = null;
+    syncNavigation();
+  }
+
+  navLinks.forEach((link) =>
+    link.addEventListener('click', () => {
+      navLock = link.dataset.nav;
+      setCurrent(navLock);
+      clearTimeout(lockTimer);
+      lockTimer = setTimeout(releaseNav, 1400);
+    }),
+  );
+  addEventListener('scrollend', () => navLock && releaseNav());
+  ['wheel', 'touchstart'].forEach((type) =>
+    addEventListener(type, () => navLock && releaseNav(), { passive: true }),
+  );
+  new ResizeObserver(() => {
+    const link = (staticLink || navLinks.find((item) => item.dataset.nav === currentId));
+
+    if (link) {
+      placePill(link, false);
+    }
+  }).observe(nav);
+  document.fonts?.ready.then(() => {
+    const link = (staticLink || navLinks.find((item) => item.dataset.nav === currentId));
+
+    if (link) {
+      placePill(link, false);
+    }
+  });
 
   addEventListener(
     'scroll',
@@ -563,7 +726,57 @@
 
   syncNavigation();
 
-  $('#copy-email').addEventListener('click', async () => {
+  if (staticLink) {
+    placePill(staticLink);
+  }
+
+  // Main page -> DECODE: the card photo and title morph into the season hero.
+  const decodeNames = {
+    '.decode-media': 'decode-photo',
+    '.decode-feature h2': 'decode-title',
+    '.season-collage .wide': 'decode-photo',
+    '.season-copy h1': 'decode-title',
+  };
+  const nameElements = (on) =>
+    Object.entries(decodeNames).forEach(([selector, name]) => {
+      const element = $(selector);
+
+      if (element) {
+        element.style.viewTransitionName = on ? name : '';
+      }
+    });
+  const isDecode = (url) => new URL(url).pathname.includes('/decode');
+
+  addEventListener('pageswap', (event) => {
+    if (event.viewTransition && event.activation?.entry && isDecode(event.activation.entry.url)) {
+      nameElements(true);
+    }
+  });
+  addEventListener('pagereveal', (event) => {
+    const from = navigation.activation?.from?.url;
+
+    if (event.viewTransition && from && !isDecode(from)) {
+      nameElements(true);
+      event.viewTransition.finished.finally(() => nameElements(false));
+    }
+  });
+  addEventListener('pageshow', (event) => event.persisted && nameElements(false));
+
+  // Season gallery lightbox.
+  const lightbox = $('#lightbox');
+
+  $$('[data-lightbox]').forEach((shot) =>
+    shot.addEventListener('click', () => {
+      const img = $('img', shot);
+
+      $('img', lightbox).src = img.currentSrc || img.src;
+      $('img', lightbox).alt = img.alt;
+      $('#lightbox-title').textContent = shot.dataset.lightbox;
+      openDialog(lightbox);
+    }),
+  );
+
+  $('#copy-email')?.addEventListener('click', async () => {
     try {
       if (!navigator.clipboard?.writeText) {
         throw new Error('Clipboard unavailable');

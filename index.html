@@ -36,6 +36,7 @@
       }
     </script>
     <link rel="stylesheet" href="public/styles.css" />
+    <script src="public/i18n.js" defer></script>
     <script src="public/script.js" defer></script>
   </head>
   <body>
@@ -99,6 +100,14 @@
         <symbol id="i-check" viewBox="0 0 24 24">
           <path d="m5 12 4 4L19 6" />
         </symbol>
+        <symbol id="i-instagram" viewBox="0 0 24 24">
+          <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.2" cy="6.8" r="0.6" />
+        </symbol>
+        <symbol id="i-tiktok" viewBox="0 0 24 24">
+          <path d="M14 3.5v10.2a3.9 3.9 0 1 1-3.9-3.9M14 3.5c.3 2.5 2 4.2 5 4.4" />
+        </symbol>
         <symbol id="i-zoom" viewBox="0 0 24 24">
           <circle cx="10.5" cy="10.5" r="6.5" />
           <path d="m16 16 5 5M7 10.5h7m-3.5-3.5v7" />
@@ -113,11 +122,16 @@
         >
         <nav class="primary-nav" aria-label="Main navigation">
           <a href="#robot" data-nav="robot">The robot</a
-          ><a href="#about" data-nav="about">Our story</a
+          ><a href="#decode" data-nav="decode">Our story</a
           ><a href="#team" data-nav="team">The team</a
           ><a href="#support" data-nav="support">Partner with us</a>
         </nav>
         <div class="header-actions">
+          <div class="lang-switch" role="group" aria-label="Language" hidden>
+            <span class="lang-indicator" aria-hidden="true"></span>
+            <button type="button" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" data-lang="ro" aria-pressed="false">RO</button>
+          </div>
           <button
             class="icon-button"
             id="theme-toggle"
@@ -158,8 +172,7 @@
             </p>
             <div class="hero-actions" data-reveal>
               <a class="button button-primary button-large" href="#join" data-email="partner"
-                >Partner with us<svg class="icon" aria-hidden="true">
-                  <use href="#i-up-right" /></svg></a
+                ><svg class="icon" aria-hidden="true"><use href="#i-up-right" /></svg>Partner with us</a
               ><a class="text-link" href="#robot"
                 >Meet the machine<svg class="icon" aria-hidden="true">
                   <use href="#i-down" /></svg
@@ -167,10 +180,6 @@
             </div>
             <div class="hero-identity" data-reveal>
               <p>Built at Liceul Teoretic<br /><strong>Ștefan Holban, Cărpineni.</strong></p>
-              <a class="round-link" href="#about" aria-label="Read our story"
-                ><svg class="icon" aria-hidden="true">
-                  <use href="#i-arrow" /></svg
-              ></a>
             </div>
           </div>
           <figure class="hero-media" data-reveal="photo">
@@ -316,6 +325,31 @@
           </div>
         </details>
       </section>
+      <section class="decode-section frame section-space" id="decode" aria-labelledby="decode-title">
+        <div class="decode-feature" data-reveal="photo">
+          <div class="decode-copy">
+            <p class="decode-eyebrow">2025–2026 · FTC DECODE</p>
+            <h2 id="decode-title">DECODE.</h2>
+            <p class="decode-lead">A season of building,<br />learning, and competing.</p>
+            <p class="decode-description">
+              Explore our robot, the work behind it, and our experience at Moldova’s national FTC
+              championship.
+            </p>
+            <a class="button button-accent button-large decode-cta" href="decode/index.html"
+              ><span class="decode-arrow" aria-hidden="true"><svg class="icon"><use href="#i-arrow" /></svg><svg class="icon"><use href="#i-arrow" /></svg></span>Explore the season</a>
+          </div>
+          <figure class="decode-media">
+            <img
+              src="public/images/team-image-at-ftc.jpg"
+              width="1280"
+              height="960"
+              loading="lazy"
+              alt="CarpenTech team members with their robot at the Moldova national FTC championship"
+            />
+            <figcaption class="decode-media-label">Moldova Championship · 2026</figcaption>
+          </figure>
+        </div>
+      </section>
       <section class="story-section section-space" id="about" aria-labelledby="story-title">
         <div class="frame">
           <div class="section-intro story-intro">
@@ -357,47 +391,6 @@
               <figcaption>Robot code and a connected controller at the workbench.</figcaption>
             </figure>
           </div>
-          <div class="practice-list" role="group" aria-label="What we do">
-            <details data-reveal="list">
-              <summary>
-                We build.<svg class="icon" aria-hidden="true">
-                  <use href="#i-plus" />
-                </svg>
-              </summary>
-              <div class="details-body">
-                <p>
-                  We design and build our robot, then keep improving it until its parts work
-                  together.
-                </p>
-              </div>
-            </details>
-            <details data-reveal="list">
-              <summary>
-                We code.<svg class="icon" aria-hidden="true">
-                  <use href="#i-plus" />
-                </svg>
-              </summary>
-              <div class="details-body">
-                <p>
-                  We write Java, work on autonomous routines and driver assistance, and test how our
-                  software behaves on the robot.
-                </p>
-              </div>
-            </details>
-            <details data-reveal="list">
-              <summary>
-                We share.<svg class="icon" aria-hidden="true">
-                  <use href="#i-plus" />
-                </svg>
-              </summary>
-              <div class="details-body">
-                <p>
-                  We bring robotics to schools and community events, helping students try building
-                  and programming for themselves.
-                </p>
-              </div>
-            </details>
-          </div>
         </div>
       </section>
       <section class="team-section frame section-space" id="team" aria-labelledby="team-title">
@@ -409,63 +402,6 @@
           </p>
         </div>
         <div class="team-toolbar">
-          <div class="team-filters" role="group" aria-label="Filter team by area" hidden>
-            <button
-              class="filter-button"
-              type="button"
-              data-team-filter="all"
-              aria-pressed="true"
-              aria-controls="team-roster"
-            >
-              <svg class="icon filter-check" aria-hidden="true">
-                <use href="#i-check" /></svg
-              >Everyone
-            </button>
-            <button
-              class="filter-button"
-              type="button"
-              data-team-filter="engineering"
-              aria-pressed="false"
-              aria-controls="team-roster"
-            >
-              <svg class="icon filter-check" aria-hidden="true">
-                <use href="#i-check" /></svg
-              >Build
-            </button>
-            <button
-              class="filter-button"
-              type="button"
-              data-team-filter="design"
-              aria-pressed="false"
-              aria-controls="team-roster"
-            >
-              <svg class="icon filter-check" aria-hidden="true">
-                <use href="#i-check" /></svg
-              >Design &amp; 3D
-            </button>
-            <button
-              class="filter-button"
-              type="button"
-              data-team-filter="code"
-              aria-pressed="false"
-              aria-controls="team-roster"
-            >
-              <svg class="icon filter-check" aria-hidden="true">
-                <use href="#i-check" /></svg
-              >Code
-            </button>
-            <button
-              class="filter-button"
-              type="button"
-              data-team-filter="people"
-              aria-pressed="false"
-              aria-controls="team-roster"
-            >
-              <svg class="icon filter-check" aria-hidden="true">
-                <use href="#i-check" /></svg
-              >Brand &amp; PR
-            </button>
-          </div>
           <p
             class="team-status"
             id="team-status"
@@ -570,9 +506,7 @@
                 learning, and sharing robotics.
               </p>
               <a class="button button-accent button-large" href="#join" data-email="partner"
-                >Let’s become partners<svg class="icon" aria-hidden="true">
-                  <use href="#i-up-right" /></svg
-              ></a>
+                ><svg class="icon" aria-hidden="true"><use href="#i-up-right" /></svg>Let’s become partners</a>
             </div>
           </div>
           <div class="contact-panel" id="join" data-reveal="photo">
@@ -611,6 +545,18 @@
                 <svg class="icon" aria-hidden="true"><use href="#i-copy" /></svg
                 ><span>Copy email</span>
               </button>
+              <div class="social-links">
+            <a class="social-button social-instagram" href="https://www.instagram.com/carpen.tech/" target="_blank" rel="noopener"
+              ><span class="social-chip" aria-hidden="true"><svg class="icon"><use href="#i-instagram" /></svg></span
+              ><span class="social-label">Instagram<small>@carpen.tech</small></span
+              ><svg class="icon social-out" aria-hidden="true"><use href="#i-up-right" /></svg
+            ></a>
+            <a class="social-button social-tiktok" href="https://www.tiktok.com/@carpen.tech" target="_blank" rel="noopener"
+              ><span class="social-chip" aria-hidden="true"><svg class="icon"><use href="#i-tiktok" /></svg></span
+              ><span class="social-label">TikTok<small>@carpen.tech</small></span
+              ><svg class="icon social-out" aria-hidden="true"><use href="#i-up-right" /></svg
+            ></a>
+          </div>
             </div>
           </div>
         </div>
@@ -642,11 +588,18 @@
           </button>
         </form>
       </div>
+      <div class="menu-language">
+        <div class="lang-switch" role="group" aria-label="Language" hidden>
+          <span class="lang-indicator" aria-hidden="true"></span>
+          <button type="button" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang="ro" aria-pressed="false">RO</button>
+        </div>
+      </div>
       <nav aria-label="Mobile navigation">
         <a href="#robot"
           >The robot<svg class="icon" aria-hidden="true">
             <use href="#i-arrow" /></svg></a
-        ><a href="#about"
+        ><a href="#decode"
           >Our story<svg class="icon" aria-hidden="true">
             <use href="#i-arrow" /></svg></a
         ><a href="#team"
