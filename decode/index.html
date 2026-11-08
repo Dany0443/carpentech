@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f5f7f1" />
+    <meta
+      name="description"
+      content="CarpenTech’s 2025–2026 FIRST Tech Challenge DECODE season. "
+    />
+    <title>DECODE 2025–2026 · CarpenTech</title>
+    <link rel="icon" href="../public/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="../public/fonts/roboto-flex-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script>
+      try {
+        const savedTheme = localStorage.getItem('carpentech-theme');
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch {
+        // Use the system theme when storage is unavailable.
+      }
+    </script>
+    <link rel="stylesheet" href="../public/styles.css" />
+    <script src="../public/i18n.js" defer></script>
+    <script src="../public/script.js" defer></script>
+  </head>
+  <body>
+    <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </symbol>
+        <symbol id="i-up-right" viewBox="0 0 24 24">
+          <path d="M6 18 18 6M6 6h12v12" />
+        </symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+        </symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24">
+          <path d="M20.5 13.5A8.8 8.8 0 0 1 10.5 3a9 9 0 1 0 10 10.5Z" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24">
+          <path d="M4 8h16M4 16h16" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M6 18 18 6" />
+        </symbol>
+      </defs>
+    </svg>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner frame">
+        <a class="brand" href="../index.html" aria-label="CarpenTech home"
+          ><img src="../public/favicon.svg" width="48" height="48" alt="" /><span>CarpenTech</span></a
+        >
+        <nav class="primary-nav" aria-label="Main navigation">
+          <a href="../index.html#robot">The robot</a><a href="../index.html#decode">Our story</a
+          ><a href="../index.html#team">The team</a><a href="../index.html#support">Partner with us</a
+          ><a href="./index.html" aria-current="page">DECODE</a>
+        </nav>
+        <div class="header-actions">
+          <div class="lang-switch" role="group" aria-label="Language" hidden>
+            <span class="lang-indicator" aria-hidden="true"></span>
+            <button type="button" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" data-lang="ro" aria-pressed="false">RO</button>
+          </div>
+          <button
+            class="icon-button"
+            id="theme-toggle"
+            type="button"
+            aria-label="Switch to dark theme"
+            aria-pressed="false"
+            hidden
+          >
+            <svg class="icon" aria-hidden="true"><use href="#i-moon" /></svg>
+          </button>
+          <button
+            class="icon-button menu-toggle"
+            id="menu-open"
+            type="button"
+            aria-label="Open navigation"
+            aria-haspopup="dialog"
+            aria-controls="mobile-menu"
+            aria-expanded="false"
+            hidden
+          >
+            <svg class="icon" aria-hidden="true"><use href="#i-menu" /></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <section class="season-hero frame" aria-labelledby="decode-title">
+        <div class="season-hero-grid">
+          <div class="season-copy">
+            <p class="season-kicker" data-reveal>2025–2026 · FIRST Tech Challenge</p>
+            <h1 id="decode-title">DECODE.</h1>
+            <p class="hero-description" data-reveal>
+              A season of building, coding, and competing. Here’s how it looked from our side of
+              the pit table.
+            </p>
+            <div class="hero-actions" data-reveal>
+              <a class="button button-primary button-large" href="https://ftc-events.firstinspires.org/2025/team/28287" rel="noopener"
+                ><svg class="icon" aria-hidden="true"><use href="#i-up-right" /></svg>Official FIRST results</a
+              ><a class="text-link" href="#chapters"
+                >See the season<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg
+              ></a>
+            </div>
+          </div>
+          <div class="season-collage">
+            <figure class="season-photo wide r-tl">
+              <img src="../public/images/team-image-at-ftc.jpg" width="1280" height="960" alt="The CarpenTech team posing with their robot and banner at the national championship" fetchpriority="high" style="object-position:50% 55%" />
+              <figcaption class="season-tag">Moldova Championship · 2026</figcaption>
+            </figure>
+            <figure class="season-photo square r-br" data-reveal="photo"><img src="../public/images/robot-plate.jpg
+              " width="960" height="1280" alt="Robot 28287 with its number plate" loading="lazy" /></figure>
+            <figure class="season-photo square r-tr" data-reveal="photo"><img src="../public/images/pit-tune.jpg" width="960" height="1280" alt="Team members tuning the robot at the pit table" loading="lazy" /></figure>
+          </div>
+        </div>
+        <div class="context-strip" data-reveal>
+          <p>FTC team <strong>#28287</strong></p>
+          <p>National championship <strong>Moldova</strong></p>
+          <p>Java code · REV hardware</p>
+        </div>
+      </section>
+      <section class="frame section-space" id="chapters" aria-labelledby="chapters-title">
+        <div class="section-intro">
+          <h2 id="chapters-title" data-reveal="headline">Build it.<br />Code it.<br />Compete.</h2>
+          <p data-reveal>Three things happen at once on a robotics team. This season they all happened in one room.</p>
+        </div>
+        <div class="season-chapter">
+          <div class="chapter-text c-4" data-reveal="photo">
+            <h3>Built on the pit table.</h3>
+            <p>Between matches the robot never really rests. Parts get tightened, mechanisms get tuned, and every change gets tested again.</p>
+          </div>
+          <figure class="season-photo c-5 landscape r-tr" data-reveal="photo"><img src="../public/images/pit-build.jpg
+            " width="1280" height="960" alt="Hands working on the robot with a drill at the pit table" loading="lazy" /></figure>
+          <figure class="season-photo c-3 r-bl" data-reveal="photo"><img src="../public/images/inspection.jpg" width="960" height="1280" alt="The robot on the table during a check" loading="lazy" /></figure>
+        </div>
+        <div class="season-chapter">
+          <figure class="season-photo c-4 r-tl" data-reveal="photo"><img src="../public/images/programming-workstation.webp" width="960" height="1280" alt="A laptop showing robot code next to a controller" loading="lazy" /></figure>
+          <div class="chapter-text c-4 is-dark" data-reveal="photo">
+            <h3>Code that moves it.</h3>
+            <p>Java drives the motors and the launcher, and a camera reads ball colors. At the championship, the laptops were never far from the robot.</p>
+          </div>
+          <figure class="season-photo c-4 r-br" data-reveal="photo"><img src="../public/images/code-typing.jpg" width="960" height="1280" alt="A team member programming on a laptop at the event" loading="lazy" /></figure>
+        </div>
+        <div class="season-chapter">
+          <div class="chapter-text c-5" data-reveal="photo">
+            <h3>Match day.</h3>
+            <p>One arena, one big screen, and a robot that has to do it live. Moldova’s national FTC championship, 2026.</p>
+          </div>
+          <figure class="season-photo c-7 landscape r-tl" data-reveal="photo"><img src="../public/images/arena-wide.jpg" width="1280" height="960" alt="The championship arena with teams gathered around the field" loading="lazy" /></figure>
+        </div>
+      </section>
+      <section class="frame section-space" aria-labelledby="gallery-title">
+        <div class="section-intro">
+          <h2 id="gallery-title" data-reveal="headline">More from<br />the floor.</h2>
+        </div>
+        <div class="season-gallery"><button class="season-photo r-tr" type="button" data-lightbox="The competition arena with the big match screen" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/arena-screen.jpg" width="1280" height="960" alt="The competition arena with the big match screen" loading="lazy" /></button><button class="season-photo r-bl" type="button" data-lightbox="Two team members in sunglasses at the pit table" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/team-fun.jpg" width="1280" height="960" alt="Two team members in sunglasses at the pit table" loading="lazy" /></button><button class="season-photo r-br" type="button" data-lightbox="A match in progress with the live scoreboard" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/match.jpg" width="960" height="1280" alt="A match in progress with the live scoreboard" loading="lazy" /></button><button class="season-photo r-tl" type="button" data-lightbox="The robot on the table, wheels and chain visible" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/robot-table.jpg" width="1280" height="960" alt="The robot on the table, wheels and chain visible" loading="lazy" /></button><button class="season-photo r-tr" type="button" data-lightbox="Robot 28287 next to the field" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/robot-field.jpg" width="960" height="1280" alt="Robot 28287 next to the field" loading="lazy" /></button><button class="season-photo r-bl" type="button" data-lightbox="Two team members in CarpenTech hoodies at the booth" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/team-shades.jpg" width="960" height="1280" alt="Two team members in CarpenTech hoodies at the booth" loading="lazy" /></button><button class="season-photo r-br" type="button" data-lightbox="Teams watching the match screen" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/scoreboard.jpg" width="960" height="1280" alt="Teams watching the match screen" loading="lazy" /></button><button class="season-photo r-tl" type="button" data-lightbox="The robot at the pit table with a mentor" aria-haspopup="dialog" aria-controls="lightbox" data-reveal="photo"><img src="../public/images/pit-close.jpg" width="960" height="1280" alt="The robot at the pit table with a mentor" loading="lazy" /></button></div>
+      </section>
+      <section class="support-section section-space" aria-labelledby="results-title">
+        <div class="frame">
+          <div class="support-intro">
+            <h2 id="results-title" data-reveal="headline">Want the<br />official numbers?</h2>
+            <div data-reveal>
+              <p>Rankings and match results live on the FIRST events site.</p>
+              <a class="button button-accent button-large" href="https://ftc-events.firstinspires.org/2025/team/28287" rel="noopener"
+                ><svg class="icon" aria-hidden="true"><use href="#i-up-right" /></svg>Official FIRST results</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer frame">
+      <div class="footer-bottom">
+        <p>© 2026 CarpenTech · FTC #28287</p>
+        <p>Liceul Teoretic Ștefan Holban</p>
+      </div>
+    </footer>
+    <dialog class="mobile-menu" id="mobile-menu" aria-labelledby="menu-title">
+      <div class="menu-header">
+        <h2 id="menu-title">Take a look.</h2>
+        <form method="dialog">
+          <button type="submit" class="icon-button" aria-label="Close navigation">
+            <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+          </button>
+        </form>
+      </div>
+      <div class="menu-language">
+        <div class="lang-switch" role="group" aria-label="Language" hidden>
+          <span class="lang-indicator" aria-hidden="true"></span>
+          <button type="button" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang="ro" aria-pressed="false">RO</button>
+        </div>
+      </div>
+      <nav aria-label="Mobile navigation">
+        <a href="../index.html#robot"
+          >The robot<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg></a
+        ><a href="../index.html#decode"
+          >Our story<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg></a
+        ><a href="../index.html#team"
+          >The team<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg></a
+        ><a href="../index.html#support"
+          >Partner with us<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg></a
+        ><a href="./index.html" aria-current="page"
+          >DECODE<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg
+        ></a>
+      </nav>
+    </dialog>
+    <dialog class="photo-dialog" id="lightbox" aria-labelledby="lightbox-title">
+      <div class="photo-dialog-head">
+        <h2 id="lightbox-title"></h2>
+        <form method="dialog">
+          <button type="submit" class="icon-button" aria-label="Close photo">
+            <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+          </button>
+        </form>
+      </div>
+      <img src="" alt="" />
+    </dialog>
+  </body>
+</html>
