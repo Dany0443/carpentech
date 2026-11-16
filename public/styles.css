@@ -1803,7 +1803,45 @@ dialog[open]::backdrop {
   }
 }
 
-@media (min-width: 1500px) {
+@media (min-width: 801px) {
+  .hero-media {
+    height: clamp(440px, calc(100svh - 252px), 620px);
+  }
+}
+
+@media (min-width: 801px) and (max-height: 800px) {
+  .hero-image {
+    object-position: 50% 35%;
+  }
+
+  .hero-copy {
+    padding-top: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(4rem, 10svh, 5rem);
+  }
+
+  .hero .hero-description {
+    max-width: 100%;
+    margin-top: 16px;
+  }
+
+  .hero .hero-actions {
+    margin-top: 20px;
+  }
+
+  .hero-identity {
+    padding-top: 16px;
+  }
+
+  .hero .context-strip {
+    margin-top: 24px;
+    padding-block: 20px;
+  }
+}
+
+@media (min-width: 1500px) and (min-height: 912px) {
   .hero-media {
     height: 660px;
   }
@@ -1832,7 +1870,7 @@ dialog[open]::backdrop {
   }
 
   .hero-media {
-    height: 580px;
+    height: clamp(440px, calc(100svh - 252px), 580px);
   }
 
   .hero-actions {
@@ -1844,11 +1882,11 @@ dialog[open]::backdrop {
   }
 
   .hero-identity {
-    padding-top: 32px;
+    padding-top: clamp(16px, calc(10svh - 64px), 32px);
   }
 
   .hero h1 {
-    font-size: clamp(56px, 7.3vw, 80px);
+    font-size: clamp(56px, min(7.3vw, 10svh), 80px);
   }
 
   .robot-info {
@@ -2737,6 +2775,30 @@ dialog[open]::backdrop {
   color: var(--brand-on-forest);
   font-size: 14px;
   font-weight: 600;
+}
+
+@media (min-width: 961px) {
+  .season-collage {
+    /* Reserve room for the header, hero spacing, and context strip. */
+    height: clamp(400px, calc(100svh - 252px), 640px);
+    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .season-collage .wide,
+  .season-collage .square {
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  .season-collage .season-tag {
+    top: auto;
+    bottom: 16px;
+  }
+
+  .season-hero .context-strip {
+    margin-top: 24px;
+    padding-block: 20px;
+  }
 }
 
 .season-chapter {

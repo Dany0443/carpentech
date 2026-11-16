@@ -2,7 +2,8 @@
   'use strict';
 
   const RO = {
-  "CarpenTech: Robotics. Rooted here.": "CarpenTech: Robotică. Cu rădăcini aici.",
+  "CarpenTech | FTC Team 28287 · Cărpineni, Moldova": "CarpenTech | Echipa FTC 28287 · Cărpineni, Moldova",
+  "DECODE 2025–2026 | CarpenTech FTC Team 28287": "DECODE 2025–2026 | CarpenTech, echipa FTC 28287",
   "Skip to content": "Sari la conținut",
   "The robot": "Robotul",
   "Our story": "Povestea noastră",
@@ -78,8 +79,9 @@
   "Copy email": "Copiază emailul",
   "Rooted in Cărpineni.": "Cu rădăcini în Cărpineni.",
   "Take a look.": "Aruncă o privire.",
-  "Meet CarpenTech, FTC robotics team 28287 from Liceul Teoretic Ștefan Holban in Cărpineni. Explore our robot, meet the team, and become a partner.": "Fă cunoștință cu CarpenTech, echipa de robotică FTC 28287 de la Liceul Teoretic Ștefan Holban din Cărpineni. Descoperă robotul, cunoaște echipa și devino partener.",
-  "Student robotics from Cărpineni. Meet the machine, the people, and the possibilities.": "Robotică făcută de elevi din Cărpineni. Cunoaște robotul, oamenii și posibilitățile.",
+  "CarpenTech is FTC robotics team 28287 from Cărpineni, Moldova. Meet our student team at Liceul Teoretic Ștefan Holban, explore our robot, and partner with us.": "CarpenTech este echipa de robotică FTC 28287 din Cărpineni, Moldova. Cunoaște elevii de la Liceul Teoretic Ștefan Holban, descoperă robotul și devino partener.",
+  "Explore CarpenTech’s DECODE 2025–2026 FTC season: robot building, Java programming, pit work, and photos from Moldova’s national championship.": "Descoperă sezonul FTC DECODE 2025–2026 al CarpenTech: construcția robotului, programare Java, lucru în pit și fotografii de la campionatul național al Moldovei.",
+  "CarpenTech FTC team 28287 with their robot at Moldova’s national championship": "Echipa FTC CarpenTech 28287 cu robotul lor la campionatul național al Moldovei",
   "CarpenTech home": "Acasă CarpenTech",
   "Main navigation": "Navigare principală",
   "Switch to dark theme": "Treci la tema întunecată",
@@ -120,7 +122,6 @@
   "Want the": "Vrei",
   "official numbers?": "cifrele oficiale?",
   "Rankings and match results live on the FIRST events site.": "Clasamentele și rezultatele meciurilor se găsesc pe site-ul de evenimente FIRST.",
-  "CarpenTech’s 2025–2026 FIRST Tech Challenge DECODE season.": "Sezonul DECODE 2025–2026 al CarpenTech în FIRST Tech Challenge.",
   "The CarpenTech team posing with their robot and banner at the national championship": "Echipa CarpenTech pozând cu robotul și bannerul la campionatul național",
   "Robot 28287 with its number plate": "Robotul 28287 cu plăcuța de număr",
   "Team members tuning the robot at the pit table": "Membri ai echipei reglând robotul la masa din pit",
@@ -200,7 +201,7 @@
     });
   });
   document
-    .querySelectorAll('meta[name="description"], meta[property="og:title"], meta[property="og:description"]')
+    .querySelectorAll('meta[name="description"], meta[property="og:title"], meta[property="og:description"], meta[property="og:image:alt"], meta[name="twitter:title"], meta[name="twitter:description"], meta[name="twitter:image:alt"]')
     .forEach((el) => {
       const raw = el.content;
 
@@ -225,6 +226,12 @@
     lang = next;
     root.lang = next;
     tracked.forEach((entry) => entry.set(next === 'ro' ? RO[entry.key] : null));
+
+    const locale = document.querySelector('meta[property="og:locale"]');
+
+    if (locale) {
+      locale.content = next === 'ro' ? 'ro_RO' : 'en_US';
+    }
 
     if (titleEntry) {
       document.title = next === 'ro' ? RO[titleEntry.key] : titleRaw;
